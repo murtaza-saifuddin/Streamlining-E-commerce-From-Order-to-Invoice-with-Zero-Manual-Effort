@@ -1,0 +1,478 @@
+{
+  "name": "E-Commerce Order Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "test-order",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "87be8296-753b-480e-ad79-444c2aed8871",
+      "name": "Webhook",
+      "webhookId": "a1d7a449-0d31-4bb1-907b-000beee4423d"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0APAAM8RC3",
+          "mode": "list",
+          "cachedResultName": "social"
+        },
+        "text": "=🚀 *New Order Alert!*\n----------------------------\n📦 *Product:* {{ $json['Product '] }}\n💰 *Amount:* PKR {{ $json['Total-Amount'] }}\n📧 *Customer:* {{ $json['Customer-Email'] }}\n🆔 *Order ID:* {{ $json['Order-ID'] }}\n📅 *Date:* {{ $json.Date }}\n----------------------------\n_Automated by n8n_",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        416,
+        0
+      ],
+      "id": "cb74b831-a435-4831-88d1-5bd02025bcdb",
+      "name": "Send a message",
+      "webhookId": "aac5cdb5-e95d-49e6-a174-c3f3b2dfa5fd",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "1VgBP4lYYHyvAt9t",
+          "name": "Slack OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1U7kN2kPPn5_ORE9g5KDdPVOp7BfdtYngiZETMDpvHfQ",
+          "mode": "list",
+          "cachedResultName": "E-Commerce Order Automation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1U7kN2kPPn5_ORE9g5KDdPVOp7BfdtYngiZETMDpvHfQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1U7kN2kPPn5_ORE9g5KDdPVOp7BfdtYngiZETMDpvHfQ/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $json.body.date }}",
+            "Order-ID": "={{ $json.body.order_id }}",
+            "Customer-Email": "={{ $json.body.customer_email }}",
+            "Product": "={{ $json.body.product }}",
+            "Total-Amount": "={{ $json.body.price }}",
+            "Quantity": "={{ $json.body.quantity }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Order-ID",
+              "displayName": "Order-ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Customer-Email",
+              "displayName": "Customer-Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Product",
+              "displayName": "Product",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Total-Amount",
+              "displayName": "Total-Amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Quantity",
+              "displayName": "Quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        0
+      ],
+      "id": "2c1eec7a-440a-4613-8344-d8efeed732d5",
+      "name": "What customer Needs?",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "lsFu0n4vyRRnt6SJ",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook').item.json.body.customer_email }}",
+        "subject": "=Order Confirmed! - Order{{ $('Webhook').item.json.body.order_id }}",
+        "message": "=Dear Customer,\n\nThank you for your order from Look Jewellery Poi\n\nWe have successfully received your request and our team is currently preparing your items for shipment. Here is a summary of your order details:\n\nOrder ID:{{ $('Webhook').item.json.body.order_id }}\n\nProduct: {{ $('Webhook').item.json.body.product }}\n\nTotal Amount: PKR{{ $('Webhook').item.json.body.total_amount }}\n\nDate: {{ $('Webhook').item.json.body.date }}\n\nWe will send you another notification as soon as your package has been dispatched. If you have any questions or need to make changes to your order, simply reply to this email.\n\nThank you for choosing us!\n\nBest Regards,\nThe Look Jewellery Team\nKarachi, Pakistan",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        624,
+        0
+      ],
+      "id": "26daa2ea-c8c3-48f3-adcc-ae34648b8d77",
+      "name": "Order Confirmation from Customer",
+      "webhookId": "702d270e-8ec6-47f7-a279-4d788d535d7d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "jrLZMnnwvtSswlVP",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "06e7f2fe-ba71-4e24-a5c3-bdf503aba065",
+              "name": "invoice_html",
+              "value": "=<html>\n  <body>\n    <h1>Order Invoice</h1>\n    <p>Product: {{ $('Webhook').item.json.body.product }}</p>\n    <p>Total:{{ $('Webhook').item.json.body.price }} </p>\n  </body>\n</html>",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1248,
+        0
+      ],
+      "id": "9114a614-1964-4ffa-9f86-3f7ca921684d",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "html_content": "={{ $json.invoice_html }}",
+        "output_format": "file"
+      },
+      "type": "n8n-nodes-htmlcsstopdf.htmlcsstopdf",
+      "typeVersion": 1,
+      "position": [
+        1520,
+        0
+      ],
+      "id": "0d5e4ca0-f2a3-4575-9e53-bc9ef8ee84eb",
+      "name": "Convert HTML to PDF",
+      "credentials": {
+        "htmlcsstopdfApi": {
+          "id": "WeqEjabIMqcnKDjC",
+          "name": "HTML to PDF account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1U7kN2kPPn5_ORE9g5KDdPVOp7BfdtYngiZETMDpvHfQ",
+          "mode": "list",
+          "cachedResultName": "E-Commerce Order Automation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1U7kN2kPPn5_ORE9g5KDdPVOp7BfdtYngiZETMDpvHfQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1251401312,
+          "mode": "list",
+          "cachedResultName": "INVENTORY",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1U7kN2kPPn5_ORE9g5KDdPVOp7BfdtYngiZETMDpvHfQ/edit#gid=1251401312"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Product",
+              "lookupValue": "={{ $('Webhook').item.json.body.product }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        832,
+        0
+      ],
+      "id": "d24eecb8-3e89-40f0-8743-d42e0593364c",
+      "name": "Get Current Stock",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "lsFu0n4vyRRnt6SJ",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1U7kN2kPPn5_ORE9g5KDdPVOp7BfdtYngiZETMDpvHfQ",
+          "mode": "list",
+          "cachedResultName": "E-Commerce Order Automation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1U7kN2kPPn5_ORE9g5KDdPVOp7BfdtYngiZETMDpvHfQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1251401312,
+          "mode": "list",
+          "cachedResultName": "INVENTORY",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1U7kN2kPPn5_ORE9g5KDdPVOp7BfdtYngiZETMDpvHfQ/edit#gid=1251401312"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Product": "={{ $('Webhook').item.json.body.product }}",
+            "Stock": "={{ $node[\"Get Current Stock\"].json[\"Stock\"] - $node[\"Webhook\"].json[\"body\"][\"quantity\"] }}"
+          },
+          "matchingColumns": [
+            "Product"
+          ],
+          "schema": [
+            {
+              "id": "Product",
+              "displayName": "Product",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Stock",
+              "displayName": "Stock",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1056,
+        0
+      ],
+      "id": "6d4a2dde-36a7-40d0-bf50-0a588778ef22",
+      "name": "Update the inventory",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "lsFu0n4vyRRnt6SJ",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook').item.json.body.customer_email }}",
+        "subject": "=Invoice for Order {{ $('Webhook').item.json.body.order_id }}",
+        "message": "=Hi,\n\nGreat news! Your order {{ $('Webhook').item.json.body.order_id }} is confirmed.\n\nWe've attached your invoice to this email. Your total for the {{ $('Webhook').item.json.body.product }} is PKR{{ $('Webhook').item.json.body.price }}\n\nThanks for choosing us!\n\nCheers,\nThe Team",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1760,
+        0
+      ],
+      "id": "727ac407-6964-4552-af6a-fed67bf432ee",
+      "name": "Send invoice to customer",
+      "webhookId": "37fd6f0d-4487-4c75-b0d6-568e14bc5d96",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "jrLZMnnwvtSswlVP",
+          "name": "Gmail account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "What customer Needs?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Order Confirmation from Customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "What customer Needs?": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Order Confirmation from Customer": {
+      "main": [
+        [
+          {
+            "node": "Get Current Stock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Convert HTML to PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert HTML to PDF": {
+      "main": [
+        [
+          {
+            "node": "Send invoice to customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Current Stock": {
+      "main": [
+        [
+          {
+            "node": "Update the inventory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update the inventory": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "c1d00294-411d-4e11-9a6a-46757b08df08",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "52013681b643154fcda6e97c394b2bf53072674260ae7bc4720385517de425ef"
+  },
+  "id": "ScFELWkwWAl0S14n",
+  "tags": []
+}
